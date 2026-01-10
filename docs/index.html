@@ -1,0 +1,351 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Bambu Lab Chamber Heater Automation</title>
+    <meta
+      name="description"
+      content="n8n workflow to control a chamber heater via Tuya smart plug based on Bambu Lab printer status."
+    />
+    <style>
+      :root {
+        --bg: #0f1220;
+        --panel: #151a2d;
+        --panel-2: #1b2140;
+        --text: #e6e9f2;
+        --muted: #9aa3b2;
+        --accent: #ffb86b;
+        --accent-2: #6ad1ff;
+        --border: #2a3150;
+        --shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: "Space Grotesk", "Segoe UI", sans-serif;
+        color: var(--text);
+        background: radial-gradient(1200px 600px at 20% 10%, #1f2450 0%, #0f1220 55%)
+          fixed;
+      }
+
+      .wrap {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 48px 24px 80px;
+      }
+
+      header {
+        display: grid;
+        grid-template-columns: 1.1fr 0.9fr;
+        gap: 28px;
+        align-items: center;
+        margin-bottom: 48px;
+      }
+
+      .hero {
+        background: linear-gradient(135deg, #1b2140 0%, #1a2a4a 45%, #2b2b50 100%);
+        padding: 28px;
+        border-radius: 20px;
+        box-shadow: var(--shadow);
+        border: 1px solid var(--border);
+      }
+
+      .hero h1 {
+        margin: 0 0 12px;
+        font-size: 2.4rem;
+        letter-spacing: -0.02em;
+      }
+
+      .hero p {
+        margin: 0 0 20px;
+        color: var(--muted);
+        line-height: 1.6;
+      }
+
+      .cta {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 16px;
+        border-radius: 999px;
+        font-weight: 600;
+        text-decoration: none;
+        border: 1px solid transparent;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+      }
+
+      .btn-primary {
+        background: linear-gradient(135deg, var(--accent), #ff8a3d);
+        color: #1b120a;
+        box-shadow: 0 10px 20px rgba(255, 149, 70, 0.25);
+      }
+
+      .btn-secondary {
+        background: var(--panel);
+        color: var(--text);
+        border-color: var(--border);
+      }
+
+      .btn:hover {
+        transform: translateY(-1px);
+      }
+
+      .hero-card {
+        background: var(--panel);
+        border-radius: 18px;
+        padding: 22px;
+        border: 1px solid var(--border);
+        box-shadow: var(--shadow);
+      }
+
+      .hero-card h3 {
+        margin: 0 0 12px;
+        font-size: 1.1rem;
+      }
+
+      .hero-card ul {
+        margin: 0;
+        padding-left: 18px;
+        color: var(--muted);
+        line-height: 1.6;
+      }
+
+      section {
+        margin-bottom: 36px;
+      }
+
+      .grid {
+        display: grid;
+        gap: 18px;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      }
+
+      .card {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 18px;
+        box-shadow: var(--shadow);
+      }
+
+      .card h4 {
+        margin: 0 0 10px;
+        font-size: 1rem;
+      }
+
+      .card p,
+      .card li {
+        color: var(--muted);
+        line-height: 1.6;
+      }
+
+      .callout {
+        border-left: 4px solid var(--accent-2);
+        background: var(--panel-2);
+        padding: 16px 18px;
+        border-radius: 12px;
+      }
+
+      code,
+      pre {
+        font-family: "JetBrains Mono", "Consolas", monospace;
+      }
+
+      pre {
+        background: #0b0f1c;
+        padding: 12px 14px;
+        border-radius: 12px;
+        border: 1px solid var(--border);
+        overflow-x: auto;
+        color: #d1e8ff;
+        margin: 12px 0;
+      }
+
+      a {
+        color: var(--accent-2);
+      }
+
+      footer {
+        margin-top: 40px;
+        color: var(--muted);
+        font-size: 0.95rem;
+      }
+
+      @media (max-width: 900px) {
+        header {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Space+Grotesk:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <div class="hero">
+          <h1>Bambu Lab Chamber Heater Automation</h1>
+          <p>
+            n8n workflow to control a chamber heater via a Tuya smart plug based on Bambu Lab
+            printer state. Designed for ABS/ASA prints: heat when needed, cool when idle.
+          </p>
+          <div class="cta">
+            <a class="btn btn-primary" href="./workflow.sample.json" download>Download workflow JSON</a>
+            <a class="btn btn-secondary" href="#setup">Setup steps</a>
+          </div>
+        </div>
+        <div class="hero-card">
+          <h3>Hardware links</h3>
+          <ul>
+            <li>
+              <a
+                href="https://www.aliexpress.com/item/1005008379688337.html"
+                target="_blank"
+                rel="noreferrer"
+              >
+                Heater (AliExpress)
+              </a>
+            </li>
+            <li>
+              <a
+                href="https://www.aliexpress.com/item/1005005298261294.html"
+                target="_blank"
+                rel="noreferrer"
+              >
+                Smart switch (AliExpress)
+              </a>
+            </li>
+            <li>Compatible: Tuya smart plug controlling the heater</li>
+          </ul>
+        </div>
+      </header>
+
+      <section class="grid">
+        <div class="card">
+          <h4>What it does</h4>
+          <ul>
+            <li>Listens to printer status via MQTT (LAN mode).</li>
+            <li>Detects high-temp materials (ABS/ASA) from bed target temp.</li>
+            <li>Turns heater on when chamber is cold, off when warm or idle.</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h4>Requirements</h4>
+          <ul>
+            <li>Self-hosted n8n with Docker or Compose.</li>
+            <li>Bambu Lab P1/X1 in LAN mode (or Cloud polling).</li>
+            <li>Tuya IoT account + smart plug.</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h4>Safety</h4>
+          <ul>
+            <li>Use a heater rated for enclosed spaces.</li>
+            <li>Do not leave unattended without thermal safeguards.</li>
+            <li>Verify plugs are within current limits.</li>
+          </ul>
+        </div>
+      </section>
+
+      <section id="setup">
+        <h2>Setup overview</h2>
+        <div class="callout">
+          Enable crypto in n8n so the Code node can sign Tuya requests:
+          <pre>NODE_FUNCTION_ALLOW_BUILTIN=crypto</pre>
+        </div>
+        <div class="grid" style="margin-top: 18px;">
+          <div class="card">
+            <h4>1. Tuya IoT credentials</h4>
+            <p>
+              Create a cloud project, link your app account, and note your Access ID, Access
+              Secret, and Device ID. These are placeholders in the sample JSON.
+            </p>
+          </div>
+          <div class="card">
+            <h4>2. MQTT access</h4>
+            <p>
+              Enable LAN mode on the printer and use the MQTT topic:
+              <code>device/YOUR_PRINTER_SN/report</code>.
+            </p>
+          </div>
+          <div class="card">
+            <h4>3. Import workflow</h4>
+            <p>
+              Import <code>workflow.sample.json</code> into n8n, then update the placeholders
+              for your own device IDs and credentials.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>Workflow logic</h2>
+        <div class="grid">
+          <div class="card">
+            <h4>Trigger</h4>
+            <p>MQTT trigger reads Bambu printer status every update.</p>
+          </div>
+          <div class="card">
+            <h4>Material check</h4>
+            <p>Bed target temp >= 85C implies ABS/ASA.</p>
+          </div>
+          <div class="card">
+            <h4>Chamber check</h4>
+            <p>Heat if chamber temp is below target; stop at warm threshold.</p>
+          </div>
+          <div class="card">
+            <h4>Tuya command</h4>
+            <p>Signs a POST request with HMAC-SHA256 and toggles the smart plug.</p>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>Regional API endpoints</h2>
+        <div class="card">
+          <p>Set the Tuya endpoint for your region in the HTTP node:</p>
+          <pre>
+US: https://openapi.tuyaus.com
+EU: https://openapi.tuyaeu.com
+CN: https://openapi.tuyacn.com
+          </pre>
+        </div>
+      </section>
+
+      <section>
+        <h2>Files</h2>
+        <div class="grid">
+          <div class="card">
+            <h4>Workflow JSON</h4>
+            <p>Sanitized import file with placeholders.</p>
+            <a class="btn btn-secondary" href="./workflow.sample.json" download>Download</a>
+          </div>
+          <div class="card">
+            <h4>Repository guide</h4>
+            <p>
+              See <code>readme.md</code> for the full setup guide and troubleshooting tips.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <footer>
+        This page is intentionally generic. Replace all placeholder IDs and secrets with your
+        own values. Never commit real credentials.
+      </footer>
+    </div>
+  </body>
+</html>
