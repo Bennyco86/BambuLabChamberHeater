@@ -1,4 +1,4 @@
-# 🖨️ Bambu Lab & Tuya Heater Automation
+﻿# ðŸ–¨ï¸ Bambu Lab & Tuya Heater Automation
 
 **Goal:** Automatically control a chamber heater (via Tuya Smart Plug) based on the status of a Bambu Lab 3D printer (e.g., turn ON when printing ABS/ASA, turn OFF when idle or finished).
 
@@ -10,7 +10,13 @@
 
 ---
 
-## 🛠️ Step 1: Configure n8n Environment
+## Hardware links
+* Heater: https://www.aliexpress.com/item/1005008379688337.html?mp=1&pdp_npi=6%40dis%21NZD%21NZD%2043.95%21NZD%2030.76%21%21NZD%2029.84%21%21%21%40210328c017680504728844834e073e%2112000044784322009%21ct%21NZ%21877674695%21%211%210%21
+* Smart switch: https://www.aliexpress.com/item/1005005298261294.html?mp=1&pdp_npi=6%40dis%21NZD%21NZD%2020.23%21NZD%2010.24%21%21NZD%2010.14%21%21%21%40210328c017680504751634878e073e%2112000032537944217%21ct%21NZ%21877674695%21%212%210%21
+
+---
+
+## ðŸ› ï¸ Step 1: Configure n8n Environment
 The Tuya API requires cryptographic signing (HMAC-SHA256). By default, n8n blocks the `crypto` module in the "Code" node.
 
 1.  Open your n8n Docker configuration (e.g., `docker-compose.yml` or Unraid template).
@@ -23,7 +29,7 @@ The Tuya API requires cryptographic signing (HMAC-SHA256). By default, n8n block
 
 ---
 
-## ☁️ Step 2: Get Tuya API Credentials
+## â˜ï¸ Step 2: Get Tuya API Credentials
 To control the plug via script, you need "Cloud" access, not just the App.
 
 1.  Go to [Tuya IoT Platform](https://iot.tuya.com/) and log in.
@@ -39,7 +45,7 @@ To control the plug via script, you need "Cloud" access, not just the App.
 
 ---
 
-## 🔄 Step 3: The n8n Workflow
+## ðŸ”„ Step 3: The n8n Workflow
 Create a new workflow in n8n.
 
 ### **Node 1: Trigger (Bambu Lab)**
@@ -53,9 +59,9 @@ Create a new workflow in n8n.
 * **Node Type:** Switch (or If).
 * **Logic:**
     * Check `gcode_state`: Is it `RUNNING`?
-    * Check Filament type (if available in payload) or Bed Temp: Is it > 90°C (implies ABS/ASA)?
-    * Check Chamber Temp: Is it < 45°C?
-* **Outcome:** If Printing ABS **AND** Chamber is Cold → **Route to "Turn ON"**.
+    * Check Filament type (if available in payload) or Bed Temp: Is it > 90Â°C (implies ABS/ASA)?
+    * Check Chamber Temp: Is it < 45Â°C?
+* **Outcome:** If Printing ABS **AND** Chamber is Cold â†’ **Route to "Turn ON"**.
 
 ### **Node 3: The Tuya Signer (JavaScript)**
 This is the tricky part. You need to generate a signature for the API request.
@@ -115,7 +121,7 @@ This is the tricky part. You need to generate a signature for the API request.
 
 ---
 
-## 🧪 Troubleshooting
+## ðŸ§ª Troubleshooting
 
 * **"Module 'crypto' is disallowed":** You missed Step 1. Check your environment variables.
 * **Tuya "Permission Denied":** Ensure your Tuya Cloud Project has the "Smart Home Basic Service" API enabled (it usually has a trial period).
