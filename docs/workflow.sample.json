@@ -1,277 +1,353 @@
 {
-  "name": "BambuLab Chamber Heater Controller (Sample)",
-  "nodes": [
-    {
-      "parameters": {
-        "topics": "=device/YOUR_PRINTER_SN/report",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.mqttTrigger",
-      "typeVersion": 1,
-      "position": [
-        -496,
-        112
-      ],
-      "id": "bambu-printer-status",
-      "name": "Bambu Printer Status",
-      "credentials": {
-        "mqtt": {
-          "id": "YOUR_MQTT_CRED_ID",
-          "name": "YOUR_MQTT_CRED_NAME"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "conditions": {
-          "number": [
-            {
-              "value1": "={{ $json.print.bed_target_temper }}",
-              "operation": "largerEqual",
-              "value2": "=85"
-            }
-          ]
-        }
-      },
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 1,
-      "position": [
-        -256,
-        112
-      ],
-      "id": "check-high-temp",
-      "name": "Is High Temp (ASA/ABS)?"
-    },
-    {
-      "parameters": {
-        "conditions": {
-          "number": [
-            {
-              "value1": "={{ $json.print.chamber_temper }}",
-              "value2": "=52"
-            },
-            {
-              "value1": "={{ $json.print.chamber_temper }}",
-              "operation": "larger",
-              "value2": 55
-            }
-          ]
-        }
-      },
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 1,
-      "position": [
-        -48,
-        -16
-      ],
-      "id": "check-chamber-temp",
-      "name": "Check Chamber Temp"
-    },
-    {
-      "parameters": {
-        "jsCode": "const clientId = 'YOUR_TUYA_ACCESS_ID';\nconst clientSecret = 'YOUR_TUYA_ACCESS_SECRET';\n\nconst timestamp = Date.now().toString();\n\nconst crypto = require('crypto');\nconst stringToSign = clientId + timestamp;\nconst sign = crypto.createHmac('sha256', clientSecret).update(stringToSign).digest('hex').toUpperCase();\n\nreturn {\n  json: {\n    client_id: clientId,\n    t: timestamp,\n    sign: sign,\n    sign_method: 'HMAC-SHA256'\n  }\n};"
-      },
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        240,
-        -64
-      ],
-      "id": "tuya-sign-on",
-      "name": "Tuya Sign (ON)"
-    },
-    {
-      "parameters": {
-        "jsCode": "const clientId = 'YOUR_TUYA_ACCESS_ID';\nconst clientSecret = 'YOUR_TUYA_ACCESS_SECRET';\n\nconst timestamp = Date.now().toString();\n\nconst crypto = require('crypto');\nconst stringToSign = clientId + timestamp;\nconst sign = crypto.createHmac('sha256', clientSecret).update(stringToSign).digest('hex').toUpperCase();\n\nreturn {\n  json: {\n    client_id: clientId,\n    t: timestamp,\n    sign: sign,\n    sign_method: 'HMAC-SHA256'\n  }\n};"
-      },
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        176,
-        176
-      ],
-      "id": "tuya-sign-off",
-      "name": "Tuya Sign (OFF)"
-    },
-    {
-      "parameters": {
-        "method": "POST",
-        "url": "https://openapi.tuyaus.com/v1.0/devices/YOUR_TUYA_DEVICE_ID/commands",
-        "authentication": "genericCredentialType",
-        "genericAuthType": "headerAuth",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "sign_method",
-              "value": "HMAC-SHA256"
-            },
-            {
-              "name": "=client_id",
-              "value": "={{ $json.client_id }}"
-            },
-            {
-              "name": "t",
-              "value": "={{ $json.t }}"
-            },
-            {
-              "name": "sign",
-              "value": "={{ $json.sign }}"
-            }
-          ]
-        },
-        "sendBody": true,
-        "bodyParameters": {
-          "parameters": [
-            {
-              "name": "commands",
-              "value": "=[{\"code\": \"switch_1\", \"value\": true}]"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 3,
-      "position": [
-        480,
-        -64
-      ],
-      "id": "tuya-command-on",
-      "name": "Turn Heater ON"
-    },
-    {
-      "parameters": {
-        "method": "POST",
-        "url": "https://openapi.tuyaus.com/v1.0/devices/YOUR_TUYA_DEVICE_ID/commands",
-        "authentication": "genericCredentialType",
-        "genericAuthType": "headerAuth",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "sign_method",
-              "value": "HMAC-SHA256"
-            },
-            {
-              "name": "=client_id",
-              "value": "={{ $json.client_id }}"
-            },
-            {
-              "name": "t",
-              "value": "={{ $json.t }}"
-            },
-            {
-              "name": "sign",
-              "value": "={{ $json.sign }}"
-            }
-          ]
-        },
-        "sendBody": true,
-        "bodyParameters": {
-          "parameters": [
-            {
-              "name": "commands",
-              "value": "=[{\"code\": \"switch_1\", \"value\": false}]"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 3,
-      "position": [
-        480,
-        176
-      ],
-      "id": "tuya-command-off",
-      "name": "Turn Heater OFF"
-    }
-  ],
-  "connections": {
-    "Bambu Printer Status": {
-      "main": [
-        [
-          {
-            "node": "Is High Temp (ASA/ABS)?",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Is High Temp (ASA/ABS)?": {
-      "main": [
-        [
-          {
-            "node": "Check Chamber Temp",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Tuya Sign (OFF)",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Check Chamber Temp": {
-      "main": [
-        [
-          {
-            "node": "Tuya Sign (ON)",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Tuya Sign (OFF)",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Tuya Sign (ON)": {
-      "main": [
-        [
-          {
-            "node": "Turn Heater ON",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Tuya Sign (OFF)": {
-      "main": [
-        [
-          {
-            "node": "Turn Heater OFF",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Turn Heater ON": {
-      "main": [
-        []
-      ]
-    },
-    "Turn Heater OFF": {
-      "main": [
-        []
-      ]
-    }
-  },
-  "active": false,
-  "settings": {
-    "executionOrder": "v1"
-  },
-  "tags": []
+    "name":  "BambuLab Chamber Heater Controller (Sample)",
+    "nodes":  [
+                  {
+                      "parameters":  {
+                                         "topics":  "=device/YOUR_PRINTER_SN/report",
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "type":  "n8n-nodes-base.mqttTrigger",
+                      "typeVersion":  1,
+                      "position":  [
+                                       -496,
+                                       112
+                                   ],
+                      "id":  "bambu-printer-status",
+                      "name":  "Bambu Printer Status",
+                      "credentials":  {
+                                          "mqtt":  {
+                                                       "id":  "YOUR_MQTT_CRED_ID",
+                                                       "name":  "YOUR_MQTT_CRED_NAME"
+                                                   }
+                                      }
+                  },
+                  {
+                      "parameters":  {
+                                         "conditions":  {
+                                                            "number":  [
+                                                                           {
+                                                                               "value1":  "={{ $json.print.bed_target_temper }}",
+                                                                               "operation":  "largerEqual",
+                                                                               "value2":  "=85"
+                                                                           }
+                                                                       ]
+                                                        }
+                                     },
+                      "type":  "n8n-nodes-base.if",
+                      "typeVersion":  1,
+                      "position":  [
+                                       -256,
+                                       112
+                                   ],
+                      "id":  "check-high-temp",
+                      "name":  "Is High Temp (ASA/ABS)?"
+                  },
+                  {
+                      "parameters":  {
+                                         "conditions":  {
+                                                            "number":  [
+                                                                           {
+                                                                               "value1":  "={{ $json.print.chamber_temper }}",
+                                                                               "value2":  "=52"
+                                                                           },
+                                                                           {
+                                                                               "value1":  "={{ $json.print.chamber_temper }}",
+                                                                               "operation":  "larger",
+                                                                               "value2":  55
+                                                                           }
+                                                                       ]
+                                                        }
+                                     },
+                      "type":  "n8n-nodes-base.if",
+                      "typeVersion":  1,
+                      "position":  [
+                                       -48,
+                                       -16
+                                   ],
+                      "id":  "check-chamber-temp",
+                      "name":  "Check Chamber Temp"
+                  },
+                  {
+                      "parameters":  {
+                                         "jsCode":  "const clientId = \u0027YOUR_TUYA_ACCESS_ID\u0027;\nconst clientSecret = \u0027YOUR_TUYA_ACCESS_SECRET\u0027;\n\nconst timestamp = Date.now().toString();\n\nconst crypto = require(\u0027crypto\u0027);\nconst stringToSign = clientId + timestamp;\nconst sign = crypto.createHmac(\u0027sha256\u0027, clientSecret).update(stringToSign).digest(\u0027hex\u0027).toUpperCase();\n\nreturn {\n  json: {\n    client_id: clientId,\n    t: timestamp,\n    sign: sign,\n    sign_method: \u0027HMAC-SHA256\u0027\n  }\n};"
+                                     },
+                      "type":  "n8n-nodes-base.code",
+                      "typeVersion":  2,
+                      "position":  [
+                                       240,
+                                       -64
+                                   ],
+                      "id":  "tuya-sign-on",
+                      "name":  "Tuya Sign (ON)"
+                  },
+                  {
+                      "parameters":  {
+                                         "jsCode":  "const clientId = \u0027YOUR_TUYA_ACCESS_ID\u0027;\nconst clientSecret = \u0027YOUR_TUYA_ACCESS_SECRET\u0027;\n\nconst timestamp = Date.now().toString();\n\nconst crypto = require(\u0027crypto\u0027);\nconst stringToSign = clientId + timestamp;\nconst sign = crypto.createHmac(\u0027sha256\u0027, clientSecret).update(stringToSign).digest(\u0027hex\u0027).toUpperCase();\n\nreturn {\n  json: {\n    client_id: clientId,\n    t: timestamp,\n    sign: sign,\n    sign_method: \u0027HMAC-SHA256\u0027\n  }\n};"
+                                     },
+                      "type":  "n8n-nodes-base.code",
+                      "typeVersion":  2,
+                      "position":  [
+                                       176,
+                                       176
+                                   ],
+                      "id":  "tuya-sign-off",
+                      "name":  "Tuya Sign (OFF)"
+                  },
+                  {
+                      "parameters":  {
+                                         "method":  "POST",
+                                         "url":  "https://openapi.tuyaus.com/v1.0/devices/YOUR_TUYA_DEVICE_ID/commands",
+                                         "authentication":  "genericCredentialType",
+                                         "genericAuthType":  "headerAuth",
+                                         "sendHeaders":  true,
+                                         "headerParameters":  {
+                                                                  "parameters":  [
+                                                                                     {
+                                                                                         "name":  "sign_method",
+                                                                                         "value":  "HMAC-SHA256"
+                                                                                     },
+                                                                                     {
+                                                                                         "name":  "=client_id",
+                                                                                         "value":  "={{ $json.client_id }}"
+                                                                                     },
+                                                                                     {
+                                                                                         "name":  "t",
+                                                                                         "value":  "={{ $json.t }}"
+                                                                                     },
+                                                                                     {
+                                                                                         "name":  "sign",
+                                                                                         "value":  "={{ $json.sign }}"
+                                                                                     }
+                                                                                 ]
+                                                              },
+                                         "sendBody":  true,
+                                         "bodyParameters":  {
+                                                                "parameters":  [
+                                                                                   {
+                                                                                       "name":  "commands",
+                                                                                       "value":  "=[{\"code\": \"switch_1\", \"value\": true}]"
+                                                                                   }
+                                                                               ]
+                                                            },
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "type":  "n8n-nodes-base.httpRequest",
+                      "typeVersion":  3,
+                      "position":  [
+                                       480,
+                                       -64
+                                   ],
+                      "id":  "tuya-command-on",
+                      "name":  "Turn Heater ON"
+                  },
+                  {
+                      "parameters":  {
+                                         "method":  "POST",
+                                         "url":  "https://openapi.tuyaus.com/v1.0/devices/YOUR_TUYA_DEVICE_ID/commands",
+                                         "authentication":  "genericCredentialType",
+                                         "genericAuthType":  "headerAuth",
+                                         "sendHeaders":  true,
+                                         "headerParameters":  {
+                                                                  "parameters":  [
+                                                                                     {
+                                                                                         "name":  "sign_method",
+                                                                                         "value":  "HMAC-SHA256"
+                                                                                     },
+                                                                                     {
+                                                                                         "name":  "=client_id",
+                                                                                         "value":  "={{ $json.client_id }}"
+                                                                                     },
+                                                                                     {
+                                                                                         "name":  "t",
+                                                                                         "value":  "={{ $json.t }}"
+                                                                                     },
+                                                                                     {
+                                                                                         "name":  "sign",
+                                                                                         "value":  "={{ $json.sign }}"
+                                                                                     }
+                                                                                 ]
+                                                              },
+                                         "sendBody":  true,
+                                         "bodyParameters":  {
+                                                                "parameters":  [
+                                                                                   {
+                                                                                       "name":  "commands",
+                                                                                       "value":  "=[{\"code\": \"switch_1\", \"value\": false}]"
+                                                                                   }
+                                                                               ]
+                                                            },
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "type":  "n8n-nodes-base.httpRequest",
+                      "typeVersion":  3,
+                      "position":  [
+                                       480,
+                                       176
+                                   ],
+                      "id":  "tuya-command-off",
+                      "name":  "Turn Heater OFF"
+                  },
+                  {
+                      "parameters":  {
+                                         "content":  "Chamber Heater Control\\nBambu Lab + Tuya + n8n",
+                                         "width":  320,
+                                         "height":  120,
+                                         "color":  6
+                                     },
+                      "type":  "n8n-nodes-base.stickyNote",
+                      "typeVersion":  1,
+                      "position":  [
+                                       -560,
+                                       -220
+                                   ],
+                      "id":  "sticky-title",
+                      "name":  "Note: Overview"
+                  },
+                  {
+                      "parameters":  {
+                                         "content":  "Listen to printer status\\nLAN MQTT updates",
+                                         "width":  240,
+                                         "height":  90,
+                                         "color":  4
+                                     },
+                      "type":  "n8n-nodes-base.stickyNote",
+                      "typeVersion":  1,
+                      "position":  [
+                                       -720,
+                                       40
+                                   ],
+                      "id":  "sticky-mqtt",
+                      "name":  "Note: MQTT"
+                  },
+                  {
+                      "parameters":  {
+                                         "content":  "If high-temp material\\nand chamber \u003c 52C =\u003e heat",
+                                         "width":  280,
+                                         "height":  110,
+                                         "color":  7
+                                     },
+                      "type":  "n8n-nodes-base.stickyNote",
+                      "typeVersion":  1,
+                      "position":  [
+                                       -140,
+                                       -200
+                                   ],
+                      "id":  "sticky-logic",
+                      "name":  "Note: Logic"
+                  },
+                  {
+                      "parameters":  {
+                                         "content":  "Signed Tuya command\\nOn: switch_1 true\\nOff: switch_1 false",
+                                         "width":  260,
+                                         "height":  120,
+                                         "color":  5
+                                     },
+                      "type":  "n8n-nodes-base.stickyNote",
+                      "typeVersion":  1,
+                      "position":  [
+                                       320,
+                                       100
+                                   ],
+                      "id":  "sticky-tuya",
+                      "name":  "Note: Tuya"
+                  }
+              ],
+    "connections":  {
+                        "Bambu Printer Status":  {
+                                                     "main":  [
+                                                                  [
+                                                                      {
+                                                                          "node":  "Is High Temp (ASA/ABS)?",
+                                                                          "type":  "main",
+                                                                          "index":  0
+                                                                      }
+                                                                  ]
+                                                              ]
+                                                 },
+                        "Is High Temp (ASA/ABS)?":  {
+                                                        "main":  [
+                                                                     [
+                                                                         {
+                                                                             "node":  "Check Chamber Temp",
+                                                                             "type":  "main",
+                                                                             "index":  0
+                                                                         }
+                                                                     ],
+                                                                     [
+                                                                         {
+                                                                             "node":  "Tuya Sign (OFF)",
+                                                                             "type":  "main",
+                                                                             "index":  0
+                                                                         }
+                                                                     ]
+                                                                 ]
+                                                    },
+                        "Check Chamber Temp":  {
+                                                   "main":  [
+                                                                [
+                                                                    {
+                                                                        "node":  "Tuya Sign (ON)",
+                                                                        "type":  "main",
+                                                                        "index":  0
+                                                                    }
+                                                                ],
+                                                                [
+                                                                    {
+                                                                        "node":  "Tuya Sign (OFF)",
+                                                                        "type":  "main",
+                                                                        "index":  0
+                                                                    }
+                                                                ]
+                                                            ]
+                                               },
+                        "Tuya Sign (ON)":  {
+                                               "main":  [
+                                                            [
+                                                                {
+                                                                    "node":  "Turn Heater ON",
+                                                                    "type":  "main",
+                                                                    "index":  0
+                                                                }
+                                                            ]
+                                                        ]
+                                           },
+                        "Tuya Sign (OFF)":  {
+                                                "main":  [
+                                                             [
+                                                                 {
+                                                                     "node":  "Turn Heater OFF",
+                                                                     "type":  "main",
+                                                                     "index":  0
+                                                                 }
+                                                             ]
+                                                         ]
+                                            },
+                        "Turn Heater ON":  {
+                                               "main":  [
+                                                            [
+
+                                                            ]
+                                                        ]
+                                           },
+                        "Turn Heater OFF":  {
+                                                "main":  [
+                                                             [
+
+                                                             ]
+                                                         ]
+                                            }
+                    },
+    "active":  false,
+    "settings":  {
+                     "executionOrder":  "v1"
+                 },
+    "tags":  [
+
+             ]
 }
