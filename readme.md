@@ -1,6 +1,6 @@
-﻿# ðŸ–¨ï¸ Bambu Lab & Tuya Heater Automation
+# Bambu Lab & Tuya Heater Automation (n8n)
 
-**Goal:** Automatically control a chamber heater (via Tuya Smart Plug) based on the status of a Bambu Lab 3D printer (e.g., turn ON when printing ABS/ASA, turn OFF when idle or finished).
+**Goal:** Use n8n to automatically control a chamber heater (via Tuya Smart Plug) based on the status of a Bambu Lab 3D printer (e.g., turn ON when printing ABS/ASA, turn OFF when idle or finished).
 
 **Prerequisites:**
 * Running **n8n** server (Self-hosted).
@@ -16,36 +16,36 @@
 
 ---
 
-## ðŸ› ï¸ Step 1: Configure n8n Environment
+## Step 1: Configure n8n Environment
 The Tuya API requires cryptographic signing (HMAC-SHA256). By default, n8n blocks the `crypto` module in the "Code" node.
 
-1.  Open your n8n Docker configuration (e.g., `docker-compose.yml` or Unraid template).
-2.  Add the following environment variable:
+1. Open your n8n Docker configuration (e.g., `docker-compose.yml` or Unraid template).
+2. Add the following environment variable:
     ```bash
     NODE_FUNCTION_ALLOW_BUILTIN=crypto
     ```
-    *(Alternatively, set it to `*` to allow all built-in modules).*
-3.  **Restart your n8n container** for changes to take effect.
+    *(Alternatively, set it to `*` to allow all built-in modules.)*
+3. **Restart your n8n container** for changes to take effect.
 
 ---
 
-## â˜ï¸ Step 2: Get Tuya API Credentials
+## Step 2: Get Tuya API Credentials
 To control the plug via script, you need "Cloud" access, not just the App.
 
-1.  Go to [Tuya IoT Platform](https://iot.tuya.com/) and log in.
-2.  **Cloud > Development > Create Project**.
-3.  Link your Tuya App account:
+1. Go to [Tuya IoT Platform](https://iot.tuya.com/) and log in.
+2. **Cloud > Development > Create Project**.
+3. Link your Tuya App account:
     * Go to **Devices > Link Tuya App Account**.
     * Scan the QR code with the Tuya Smart App on your phone.
     * Your smart plug should now appear in the device list.
-4.  Copy these 3 values for later:
+4. Copy these 3 values for later:
     * **Access ID (Client ID)**
     * **Access Secret (Client Secret)**
     * **Device ID** (of the smart plug)
 
 ---
 
-## ðŸ”„ Step 3: The n8n Workflow
+## Step 3: The n8n Workflow
 Create a new workflow in n8n.
 
 ### **Node 1: Trigger (Bambu Lab)**
@@ -59,9 +59,9 @@ Create a new workflow in n8n.
 * **Node Type:** Switch (or If).
 * **Logic:**
     * Check `gcode_state`: Is it `RUNNING`?
-    * Check Filament type (if available in payload) or Bed Temp: Is it > 90Â°C (implies ABS/ASA)?
-    * Check Chamber Temp: Is it < 45Â°C?
-* **Outcome:** If Printing ABS **AND** Chamber is Cold â†’ **Route to "Turn ON"**.
+    * Check Filament type (if available in payload) or Bed Temp: Is it > 90C (implies ABS/ASA)?
+    * Check Chamber Temp: Is it < 45C?
+* **Outcome:** If Printing ABS **AND** Chamber is Cold -> **Route to "Turn ON"**.
 
 ### **Node 3: The Tuya Signer (JavaScript)**
 This is the tricky part. You need to generate a signature for the API request.
@@ -82,7 +82,7 @@ This is the tricky part. You need to generate a signature for the API request.
     // CHANGE THIS BOOLEAN BASED ON THE PATH (ON vs OFF)
     const command = {
       "commands": [
-        { "code": "switch_1", "value": true } 
+        { "code": "switch_1", "value": true }
       ]
     };
 
@@ -121,7 +121,7 @@ This is the tricky part. You need to generate a signature for the API request.
 
 ---
 
-## ðŸ§ª Troubleshooting
+## Troubleshooting
 
 * **"Module 'crypto' is disallowed":** You missed Step 1. Check your environment variables.
 * **Tuya "Permission Denied":** Ensure your Tuya Cloud Project has the "Smart Home Basic Service" API enabled (it usually has a trial period).
