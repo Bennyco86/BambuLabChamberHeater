@@ -1,12 +1,12 @@
 # <img src="n8n-color.svg" alt="n8n" height="24"> <img src="bambu%20lab%20logo%202.jpg" alt="Bambu Lab" height="24"> :fire: Bambu Lab & Tuya Heater Automation (n8n)
 
-**Goal:** Use n8n to automatically control a chamber heater (via Tuya Smart Plug) based on the status of a Bambu Lab 3D printer (e.g., turn ON when printing ABS/ASA, turn OFF when idle or finished).
+**Goal:** Use <img src="n8n-color.svg" alt="n8n" height="16"> n8n to automatically control a chamber heater (via <img src="tuya%20logo.jpg" alt="Tuya" height="16"> Tuya Smart Plug) based on the status of a <img src="bambu%20lab%20logo%202.jpg" alt="Bambu Lab" height="16"> Bambu Lab 3D printer (e.g., turn ON when printing ABS/ASA, turn OFF when idle or finished).
 
-**Prerequisites:** <img src="tuya%20logo.jpg" alt="Tuya" height="20">
-* Running **n8n** server (Self-hosted).
-* **Bambu Lab Printer** (P1/X1 series) with LAN Mode enabled (or cloud credentials).
-* **Tuya IoT Developer Account** (Free tier is fine).
-* **Tuya-compatible Smart Plug** controlling your heater.
+**Prerequisites:**
+* <img src="n8n-color.svg" alt="n8n" height="16"> Running **n8n** server (Self-hosted).
+* <img src="bambu%20lab%20logo%202.jpg" alt="Bambu Lab" height="16"> **Bambu Lab Printer** (P1/X1 series) with LAN Mode enabled (or cloud credentials).
+* <img src="tuya%20logo.jpg" alt="Tuya" height="16"> **Tuya IoT Developer Account** (Free tier is fine).
+* <img src="tuya%20logo.jpg" alt="Tuya" height="16"> **Tuya-compatible Smart Plug** controlling your heater.
 
 ---
 
@@ -16,8 +16,8 @@
 
 ---
 
-## :wrench: Step 1: Configure n8n Environment
-The Tuya API requires cryptographic signing (HMAC-SHA256). By default, n8n blocks the `crypto` module in the "Code" node.
+## :wrench: Step 1: Configure <img src="n8n-color.svg" alt="n8n" height="18"> n8n Environment
+The <img src="tuya%20logo.jpg" alt="Tuya" height="16"> Tuya API requires cryptographic signing (HMAC-SHA256). By default, <img src="n8n-color.svg" alt="n8n" height="16"> n8n blocks the `crypto` module in the "Code" node.
 
 1. Open your n8n Docker configuration (e.g., `docker-compose.yml` or Unraid template).
 2. Add the following environment variable:
@@ -29,7 +29,7 @@ The Tuya API requires cryptographic signing (HMAC-SHA256). By default, n8n block
 
 ---
 
-## :key: Step 2: Get Tuya API Credentials
+## :key: Step 2: Get <img src="tuya%20logo.jpg" alt="Tuya" height="18"> Tuya API Credentials
 To control the plug via script, you need "Cloud" access, not just the App.
 
 1. Go to [Tuya IoT Platform](https://iot.tuya.com/) and log in.
@@ -45,10 +45,10 @@ To control the plug via script, you need "Cloud" access, not just the App.
 
 ---
 
-## :gear: Step 3: The n8n Workflow
-Create a new workflow in n8n.
+## :gear: Step 3: The <img src="n8n-color.svg" alt="n8n" height="18"> n8n Workflow
+Create a new workflow in <img src="n8n-color.svg" alt="n8n" height="16"> n8n.
 
-### **Node 1: Trigger (Bambu Lab)**
+### **Node 1: Trigger (<img src="bambu%20lab%20logo%202.jpg" alt="Bambu Lab" height="16"> Bambu Lab)**
 * **Node Type:** MQTT Trigger (if using LAN mode) or HTTP Polling (if using Cloud).
 * **Recommended (MQTT):**
     * **Topic:** `device/[YOUR_SERIAL_NUMBER]/report`
@@ -63,7 +63,7 @@ Create a new workflow in n8n.
     * Check Chamber Temp: Is it < 45C?
 * **Outcome:** If Printing ABS **AND** Chamber is Cold -> **Route to "Turn ON"**.
 
-### **Node 3: The Tuya Signer (JavaScript)**
+### **Node 3: The <img src="tuya%20logo.jpg" alt="Tuya" height="16"> Tuya Signer (JavaScript)**
 This is the tricky part. You need to generate a signature for the API request.
 * **Node Type:** Code (JavaScript).
 * **Code Snippet:**
@@ -107,7 +107,7 @@ This is the tricky part. You need to generate a signature for the API request.
     };
     ```
 
-### **Node 4: Send Command (HTTP Request)**
+### **Node 4: Send Command (<img src="tuya%20logo.jpg" alt="Tuya" height="16"> HTTP Request)**
 * **Node Type:** HTTP Request.
 * **Method:** POST.
 * **URL:** `https://openapi.tuyaus.com/v1.0/devices/{{ $json.deviceId }}/commands` *(Adjust URL for your region: US/EU/CN)*.
@@ -124,5 +124,5 @@ This is the tricky part. You need to generate a signature for the API request.
 ## :warning: Troubleshooting
 
 * **"Module 'crypto' is disallowed":** You missed Step 1. Check your environment variables.
-* **Tuya "Permission Denied":** Ensure your Tuya Cloud Project has the "Smart Home Basic Service" API enabled (it usually has a trial period).
+* **<img src="tuya%20logo.jpg" alt="Tuya" height="16"> Tuya "Permission Denied":** Ensure your Tuya Cloud Project has the "Smart Home Basic Service" API enabled (it usually has a trial period).
 * **Wrong Region:** If `tuyaus.com` fails, try `tuyaeu.com` (Europe) or `tuyacn.com` (Asia).
