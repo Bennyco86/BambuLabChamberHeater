@@ -2,7 +2,7 @@
 
 **Goal:** Use n8n to automatically control a chamber heater (via Tuya Smart Plug) based on the status of a Bambu Lab 3D printer (e.g., turn ON when printing ABS/ASA, turn OFF when idle or finished).
 
-**Prerequisites:**
+**Prerequisites:** <img src="tuya%20logo.jpg" alt="Tuya" height="20">
 * Running **n8n** server (Self-hosted).
 * **Bambu Lab Printer** (P1/X1 series) with LAN Mode enabled (or cloud credentials).
 * **Tuya IoT Developer Account** (Free tier is fine).
