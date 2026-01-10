@@ -1,4 +1,4 @@
-# <img src="n8n%20logo.jpg" alt="n8n" height="24"> <img src="bambu%20lab%20logo%201%20.jpg" alt="Bambu Lab" height="24"> :fire: Bambu Lab & Tuya Heater Automation (n8n)
+# <img src="n8n%20logo.jpg" alt="n8n" height="24"> <img src="bambu%20lab%20logo%202.jpg" alt="Bambu Lab" height="24"> :fire: Bambu Lab & Tuya Heater Automation (n8n)
 
 **Goal:** Use n8n to automatically control a chamber heater (via Tuya Smart Plug) based on the status of a Bambu Lab 3D printer (e.g., turn ON when printing ABS/ASA, turn OFF when idle or finished).
 
