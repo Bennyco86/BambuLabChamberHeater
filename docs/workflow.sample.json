@@ -1,433 +1,441 @@
 {
-  "name": "BambuLab Auto-Resume & Heater Controller (v2)",
-  "nodes": [
-    {
-      "parameters": {
-        "topics": "device/00M00A2B0807865/report",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.mqttTrigger",
-      "typeVersion": 1,
-      "position": [
-        3120,
-        2832
-      ],
-      "id": "ee171390-7c32-49a1-8167-77cc92b14187",
-      "name": "Bambu Printer Status",
-      "credentials": {
-        "mqtt": {
-          "id": "3JEoHRSDAAbk0XGr",
-          "name": "MQTT account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "conditions": {
-          "number": [
-            {
-              "value1": "={{ $json.print ? $json.print.bed_target_temper : $json.message.print.bed_target_temper }}",
-              "operation": "largerEqual",
-              "value2": 85
-            }
-          ]
-        }
-      },
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 1,
-      "position": [
-        3680,
-        2688
-      ],
-      "id": "74576b61-5bb8-43d7-be40-5706cffbdc9f",
-      "name": "Is High Temp (ASA/ABS)?"
-    },
-    {
-      "parameters": {
-        "method": "POST",
-        "url": "https://openapi.tuyaus.com/v1.0/devices/eb6445737c9e70e31cutat/commands",
-        "authentication": "genericCredentialType",
-        "genericAuthType": "headerAuth",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "sign_method",
-              "value": "HMAC-SHA256"
-            },
-            {
-              "name": "client_id",
-              "value": "={{ $json.client_id }}"
-            },
-            {
-              "name": "t",
-              "value": "={{ $json.t }}"
-            },
-            {
-              "name": "sign",
-              "value": "={{ $json.sign }}"
-            }
-          ]
-        },
-        "sendBody": true,
-        "bodyParameters": {
-          "parameters": [
-            {
-              "name": "commands",
-              "value": "=[{\"code\": \"switch_1\", \"value\": true}]"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 3,
-      "position": [
-        4384,
-        2560
-      ],
-      "id": "e01f7569-8184-4fab-929e-e12879d0f970",
-      "name": "Turn Heater ON"
-    },
-    {
-      "parameters": {
-        "conditions": {
-          "number": [
-            {
-              "value1": "={{ $json.print ? $json.print.chamber_temper : $json.message.print.chamber_temper }}",
-              "value2": 52
-            }
-          ]
-        }
-      },
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 1,
-      "position": [
-        3920,
-        2688
-      ],
-      "id": "3cea33c4-3e88-4ca4-8d21-18dd0344fb23",
-      "name": "Check Chamber Temp"
-    },
-    {
-      "parameters": {
-        "conditions": {
-          "number": [
-            {
-              "value1": "={{ $json.print ? $json.print.chamber_temper : $json.message.print.chamber_temper }}",
-              "operation": "larger",
-              "value2": 55
-            }
-          ]
-        }
-      },
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 1,
-      "position": [
-        4144,
-        2848
-      ],
-      "id": "ae9ad386-f2aa-4a8c-a8ec-093bb83480a3",
-      "name": "Chamber Too Hot?"
-    },
-    {
-      "parameters": {
-        "jsCode": "const clientId = 'nxc5jswgcw353hucdgha';\nconst clientSecret = 'e25dcc0d6db84dcc80aaf012764d698d';\n\n// Get current timestamp\nconst timestamp = Date.now().toString();\n\n// Calculate Signature\nconst crypto = require('crypto');\nconst stringToSign = clientId + timestamp;\nconst sign = crypto.createHmac('sha256', clientSecret).update(stringToSign).digest('hex').toUpperCase();\n\nreturn {\n  json: {\n    client_id: clientId,\n    t: timestamp,\n    sign: sign,\n    sign_method: 'HMAC-SHA256'\n  }\n};"
-      },
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        4160,
-        2560
-      ],
-      "id": "9deb8382-fa32-4488-8fcb-4247cf174547",
-      "name": "Sign Auth (ON)"
-    },
-    {
-      "parameters": {
-        "jsCode": "const clientId = 'nxc5jswgcw353hucdgha';\nconst clientSecret = 'e25dcc0d6db84dcc80aaf012764d698d';\n\n// Get current timestamp\nconst timestamp = Date.now().toString();\n\n// Calculate Signature\nconst crypto = require('crypto');\nconst stringToSign = clientId + timestamp;\nconst sign = crypto.createHmac('sha256', clientSecret).update(stringToSign).digest('hex').toUpperCase();\n\nreturn {\n  json: {\n    client_id: clientId,\n    t: timestamp,\n    sign: sign,\n    sign_method: 'HMAC-SHA256'\n  }\n};"
-      },
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        4384,
-        2848
-      ],
-      "id": "bd44639a-b03a-4f29-8412-6149fa1e4956",
-      "name": "Sign Auth (OFF)"
-    },
-    {
-      "parameters": {
-        "method": "POST",
-        "url": "https://openapi.tuyaus.com/v1.0/devices/eb6445737c9e70e31cutat/commands",
-        "authentication": "genericCredentialType",
-        "genericAuthType": "headerAuth",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "sign_method",
-              "value": "HMAC-SHA256"
-            },
-            {
-              "name": "client_id",
-              "value": "={{ $json.client_id }}"
-            },
-            {
-              "name": "t",
-              "value": "={{ $json.t }}"
-            },
-            {
-              "name": "sign",
-              "value": "={{ $json.sign }}"
-            }
-          ]
-        },
-        "sendBody": true,
-        "bodyParameters": {
-          "parameters": [
-            {
-              "name": "commands",
-              "value": "=[{\"code\": \"switch_1\", \"value\": false}]"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 3,
-      "position": [
-        4592,
-        2848
-      ],
-      "id": "19a066da-5f1e-48c9-ace8-d22b722cbeb2",
-      "name": "Turn Heater OFF"
-    },
-    {
-      "parameters": {
-        "conditions": {
-          "string": [
-            {
-              "value1": "={{$json.print.gcode_state}}",
-              "operation": "contains",
-              "value2": "PAUSE"
-            }
-          ],
-          "number": [
-            {
-              "value1": "={{$json.print.bed_target_temper}}",
-              "operation": "largerEqual",
-              "value2": 90
-            },
-            {
-              "value1": "={{$json.print.chamber_temper}}",
-              "operation": "largerEqual",
-              "value2": 47
-            }
-          ]
-        }
-      },
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 1,
-      "position": [
-        3968,
-        3200
-      ],
-      "id": "d8b48a47-53b0-4652-843c-5ba3f4a251f5",
-      "name": "Heat Soak Done?"
-    },
-    {
-      "parameters": {
-        "topic": "device/00M00A2B0807865/request",
-        "sendInputData": false,
-        "message": "{\"print\":{\"command\":\"resume\",\"sequence_id\":\"2022\"}}",
-        "options": {
-          "qos": 1,
-          "retain": false
-        }
-      },
-      "type": "n8n-nodes-base.mqtt",
-      "typeVersion": 1,
-      "position": [
-        4336,
-        3168
-      ],
-      "id": "2ffa8980-e2fa-4acc-9999-83e23cb00ca3",
-      "name": "Send Resume Command",
-      "credentials": {
-        "mqtt": {
-          "id": "3JEoHRSDAAbk0XGr",
-          "name": "MQTT account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "content": "NEW: Auto-Resume Heat-Soak\\n1) Start G-code pauses with M25\\n2) gcode_state contains PAUSE\\n3) Bed target >= 90C\\n4) Chamber >= 47C\\n5) MQTT resume command",
-        "height": 134,
-        "width": 305,
-        "color": 4
-      },
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [
-        3872,
-        3040
-      ],
-      "id": "3a9b0c16-ba9a-4c58-acf6-3e75ffdd7b94",
-      "name": "Note: Resume Logic"
-    },
-    {
-      "parameters": {
-        "mode": "runOnceForEachItem",
-        "jsCode": "const payload = typeof @{name=BambuLab Auto-Resume & Heater Controller (v2); nodes=System.Object[]; pinData=; connections=; active=False; settings=; versionId=fb1e2775-aff8-471a-aeed-2af06f5f5ba0; meta=; id=7XFE1Py8W05deUrXwdTWY; tags=System.Object[]}.message === 'string' ? JSON.parse(@{name=BambuLab Auto-Resume & Heater Controller (v2); nodes=System.Object[]; pinData=; connections=; active=False; settings=; versionId=fb1e2775-aff8-471a-aeed-2af06f5f5ba0; meta=; id=7XFE1Py8W05deUrXwdTWY; tags=System.Object[]}.message) : @{name=BambuLab Auto-Resume & Heater Controller (v2); nodes=System.Object[]; pinData=; connections=; active=False; settings=; versionId=fb1e2775-aff8-471a-aeed-2af06f5f5ba0; meta=; id=7XFE1Py8W05deUrXwdTWY; tags=System.Object[]}.message;\\nreturn [{ json: payload }];"
-      },
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        3184,
-        2144
-      ],
-      "id": "22b4b68e-92f4-4f57-a079-1ca53b08bb0c",
-      "name": "Parse MQTT Message"
-    },
-    {
-      "parameters": {
-        "mode": "runOnceForEachItem",
-        "jsCode": "  const payload = typeof $json.message === 'string'\n    ? JSON.parse($json.message)\n    : $json.message;\n\n  return { json: payload };"
-      },
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        3424,
-        2832
-      ],
-      "id": "95bf1e30-d4a1-4463-a241-2824ac5d2077",
-      "name": "Parse MQTT Message1"
-    }
-  ],
-  "pinData": {},
-  "connections": {
-    "Is High Temp (ASA/ABS)?": {
-      "main": [
-        [
-          {
-            "node": "Check Chamber Temp",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Check Chamber Temp": {
-      "main": [
-        [
-          {
-            "node": "Sign Auth (ON)",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Chamber Too Hot?",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Sign Auth (ON)": {
-      "main": [
-        [
-          {
-            "node": "Turn Heater ON",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Sign Auth (OFF)": {
-      "main": [
-        [
-          {
-            "node": "Turn Heater OFF",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Heat Soak Done?": {
-      "main": [
-        [
-          {
-            "node": "Send Resume Command",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Chamber Too Hot?": {
-      "main": [
-        [
-          {
-            "node": "Sign Auth (OFF)",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Bambu Printer Status": {
-      "main": [
-        [
-          {
-            "node": "Parse MQTT Message1",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Parse MQTT Message1": {
-      "main": [
-        [
-          {
-            "node": "Heat Soak Done?",
-            "type": "main",
-            "index": 0
-          },
-          {
-            "node": "Is High Temp (ASA/ABS)?",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    }
-  },
-  "active": false,
-  "settings": {
-    "executionOrder": "v1",
-    "availableInMCP": false,
-    "timeSavedMode": "fixed",
-    "timezone": "Pacific/Auckland",
-    "callerPolicy": "workflowsFromSameOwner"
-  },
-  "versionId": "76487db4-c3b6-42c6-b972-3307ce66c631",
-  "meta": {
-    "instanceId": "dee2869ef96bce5516d33a963e50d4194ba3eea1fc6bb316a3a265cc15582dc3"
-  },
-  "id": "7XFE1Py8W05deUrXwdTWY",
-  "tags": [
-    {
-      "updatedAt": "2025-12-19T23:30:48.565Z",
-      "createdAt": "2025-12-19T23:30:48.565Z",
-      "id": "Fdi1L1RWR21WBb59",
-      "name": "private"
-    }
-  ]
+    "name":  "BambuLab Auto-Resume \u0026 Heater Controller (v2)",
+    "nodes":  [
+                  {
+                      "parameters":  {
+                                         "topics":  "device/YOUR_PRINTER_SN/report",
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "type":  "n8n-nodes-base.mqttTrigger",
+                      "typeVersion":  1,
+                      "position":  [
+                                       3120,
+                                       2832
+                                   ],
+                      "id":  "ee171390-7c32-49a1-8167-77cc92b14187",
+                      "name":  "Bambu Printer Status",
+                      "credentials":  {
+                                          "mqtt":  {
+                                                       "id":  "YOUR_MQTT_CRED_ID",
+                                                       "name":  "YOUR_MQTT_CRED_NAME"
+                                                   }
+                                      }
+                  },
+                  {
+                      "parameters":  {
+                                         "conditions":  {
+                                                            "number":  [
+                                                                           {
+                                                                               "value1":  "={{ $json.print ? $json.print.bed_target_temper : $json.message.print.bed_target_temper }}",
+                                                                               "operation":  "largerEqual",
+                                                                               "value2":  85
+                                                                           }
+                                                                       ]
+                                                        }
+                                     },
+                      "type":  "n8n-nodes-base.if",
+                      "typeVersion":  1,
+                      "position":  [
+                                       3680,
+                                       2688
+                                   ],
+                      "id":  "74576b61-5bb8-43d7-be40-5706cffbdc9f",
+                      "name":  "Is High Temp (ASA/ABS)?"
+                  },
+                  {
+                      "parameters":  {
+                                         "method":  "POST",
+                                         "url":  "https://openapi.tuyaus.com/v1.0/devices/YOUR_TUYA_DEVICE_ID/commands",
+                                         "authentication":  "genericCredentialType",
+                                         "genericAuthType":  "headerAuth",
+                                         "sendHeaders":  true,
+                                         "headerParameters":  {
+                                                                  "parameters":  [
+                                                                                     {
+                                                                                         "name":  "sign_method",
+                                                                                         "value":  "HMAC-SHA256"
+                                                                                     },
+                                                                                     {
+                                                                                         "name":  "client_id",
+                                                                                         "value":  "={{ $json.client_id }}"
+                                                                                     },
+                                                                                     {
+                                                                                         "name":  "t",
+                                                                                         "value":  "={{ $json.t }}"
+                                                                                     },
+                                                                                     {
+                                                                                         "name":  "sign",
+                                                                                         "value":  "={{ $json.sign }}"
+                                                                                     }
+                                                                                 ]
+                                                              },
+                                         "sendBody":  true,
+                                         "bodyParameters":  {
+                                                                "parameters":  [
+                                                                                   {
+                                                                                       "name":  "commands",
+                                                                                       "value":  "=[{\"code\": \"switch_1\", \"value\": true}]"
+                                                                                   }
+                                                                               ]
+                                                            },
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "type":  "n8n-nodes-base.httpRequest",
+                      "typeVersion":  3,
+                      "position":  [
+                                       4384,
+                                       2560
+                                   ],
+                      "id":  "e01f7569-8184-4fab-929e-e12879d0f970",
+                      "name":  "Turn Heater ON"
+                  },
+                  {
+                      "parameters":  {
+                                         "conditions":  {
+                                                            "number":  [
+                                                                           {
+                                                                               "value1":  "={{ $json.print ? $json.print.chamber_temper : $json.message.print.chamber_temper }}",
+                                                                               "value2":  52
+                                                                           }
+                                                                       ]
+                                                        }
+                                     },
+                      "type":  "n8n-nodes-base.if",
+                      "typeVersion":  1,
+                      "position":  [
+                                       3920,
+                                       2688
+                                   ],
+                      "id":  "3cea33c4-3e88-4ca4-8d21-18dd0344fb23",
+                      "name":  "Check Chamber Temp"
+                  },
+                  {
+                      "parameters":  {
+                                         "conditions":  {
+                                                            "number":  [
+                                                                           {
+                                                                               "value1":  "={{ $json.print ? $json.print.chamber_temper : $json.message.print.chamber_temper }}",
+                                                                               "operation":  "larger",
+                                                                               "value2":  55
+                                                                           }
+                                                                       ]
+                                                        }
+                                     },
+                      "type":  "n8n-nodes-base.if",
+                      "typeVersion":  1,
+                      "position":  [
+                                       4144,
+                                       2848
+                                   ],
+                      "id":  "ae9ad386-f2aa-4a8c-a8ec-093bb83480a3",
+                      "name":  "Chamber Too Hot?"
+                  },
+                  {
+                      "parameters":  {
+                                         "jsCode":  "const clientId = \u0027YOUR_TUYA_ACCESS_ID\u0027;\nconst clientSecret = \u0027YOUR_TUYA_ACCESS_SECRET\u0027;\n\n// Get current timestamp\nconst timestamp = Date.now().toString();\n\n// Calculate Signature\nconst crypto = require(\u0027crypto\u0027);\nconst stringToSign = clientId + timestamp;\nconst sign = crypto.createHmac(\u0027sha256\u0027, clientSecret).update(stringToSign).digest(\u0027hex\u0027).toUpperCase();\n\nreturn {\n  json: {\n    client_id: clientId,\n    t: timestamp,\n    sign: sign,\n    sign_method: \u0027HMAC-SHA256\u0027\n  }\n};"
+                                     },
+                      "type":  "n8n-nodes-base.code",
+                      "typeVersion":  2,
+                      "position":  [
+                                       4160,
+                                       2560
+                                   ],
+                      "id":  "9deb8382-fa32-4488-8fcb-4247cf174547",
+                      "name":  "Sign Auth (ON)"
+                  },
+                  {
+                      "parameters":  {
+                                         "jsCode":  "const clientId = \u0027YOUR_TUYA_ACCESS_ID\u0027;\nconst clientSecret = \u0027YOUR_TUYA_ACCESS_SECRET\u0027;\n\n// Get current timestamp\nconst timestamp = Date.now().toString();\n\n// Calculate Signature\nconst crypto = require(\u0027crypto\u0027);\nconst stringToSign = clientId + timestamp;\nconst sign = crypto.createHmac(\u0027sha256\u0027, clientSecret).update(stringToSign).digest(\u0027hex\u0027).toUpperCase();\n\nreturn {\n  json: {\n    client_id: clientId,\n    t: timestamp,\n    sign: sign,\n    sign_method: \u0027HMAC-SHA256\u0027\n  }\n};"
+                                     },
+                      "type":  "n8n-nodes-base.code",
+                      "typeVersion":  2,
+                      "position":  [
+                                       4384,
+                                       2848
+                                   ],
+                      "id":  "bd44639a-b03a-4f29-8412-6149fa1e4956",
+                      "name":  "Sign Auth (OFF)"
+                  },
+                  {
+                      "parameters":  {
+                                         "method":  "POST",
+                                         "url":  "https://openapi.tuyaus.com/v1.0/devices/YOUR_TUYA_DEVICE_ID/commands",
+                                         "authentication":  "genericCredentialType",
+                                         "genericAuthType":  "headerAuth",
+                                         "sendHeaders":  true,
+                                         "headerParameters":  {
+                                                                  "parameters":  [
+                                                                                     {
+                                                                                         "name":  "sign_method",
+                                                                                         "value":  "HMAC-SHA256"
+                                                                                     },
+                                                                                     {
+                                                                                         "name":  "client_id",
+                                                                                         "value":  "={{ $json.client_id }}"
+                                                                                     },
+                                                                                     {
+                                                                                         "name":  "t",
+                                                                                         "value":  "={{ $json.t }}"
+                                                                                     },
+                                                                                     {
+                                                                                         "name":  "sign",
+                                                                                         "value":  "={{ $json.sign }}"
+                                                                                     }
+                                                                                 ]
+                                                              },
+                                         "sendBody":  true,
+                                         "bodyParameters":  {
+                                                                "parameters":  [
+                                                                                   {
+                                                                                       "name":  "commands",
+                                                                                       "value":  "=[{\"code\": \"switch_1\", \"value\": false}]"
+                                                                                   }
+                                                                               ]
+                                                            },
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "type":  "n8n-nodes-base.httpRequest",
+                      "typeVersion":  3,
+                      "position":  [
+                                       4592,
+                                       2848
+                                   ],
+                      "id":  "19a066da-5f1e-48c9-ace8-d22b722cbeb2",
+                      "name":  "Turn Heater OFF"
+                  },
+                  {
+                      "parameters":  {
+                                         "conditions":  {
+                                                            "string":  [
+                                                                           {
+                                                                               "value1":  "={{$json.print.gcode_state}}",
+                                                                               "operation":  "contains",
+                                                                               "value2":  "PAUSE"
+                                                                           }
+                                                                       ],
+                                                            "number":  [
+                                                                           {
+                                                                               "value1":  "={{$json.print.bed_target_temper}}",
+                                                                               "operation":  "largerEqual",
+                                                                               "value2":  90
+                                                                           },
+                                                                           {
+                                                                               "value1":  "={{$json.print.chamber_temper}}",
+                                                                               "operation":  "largerEqual",
+                                                                               "value2":  47
+                                                                           }
+                                                                       ]
+                                                        }
+                                     },
+                      "type":  "n8n-nodes-base.if",
+                      "typeVersion":  1,
+                      "position":  [
+                                       3968,
+                                       3200
+                                   ],
+                      "id":  "d8b48a47-53b0-4652-843c-5ba3f4a251f5",
+                      "name":  "Heat Soak Done?"
+                  },
+                  {
+                      "parameters":  {
+                                         "topic":  "device/YOUR_PRINTER_SN/request",
+                                         "sendInputData":  false,
+                                         "message":  "{\"print\":{\"command\":\"resume\",\"sequence_id\":\"2022\"}}",
+                                         "options":  {
+                                                         "qos":  1,
+                                                         "retain":  false
+                                                     }
+                                     },
+                      "type":  "n8n-nodes-base.mqtt",
+                      "typeVersion":  1,
+                      "position":  [
+                                       4336,
+                                       3168
+                                   ],
+                      "id":  "2ffa8980-e2fa-4acc-9999-83e23cb00ca3",
+                      "name":  "Send Resume Command",
+                      "credentials":  {
+                                          "mqtt":  {
+                                                       "id":  "YOUR_MQTT_CRED_ID",
+                                                       "name":  "YOUR_MQTT_CRED_NAME"
+                                                   }
+                                      }
+                  },
+                  {
+                      "parameters":  {
+                                         "content":  "NEW: Auto-Resume Heat-Soak\\n1) Start G-code pauses with M25\\n2) gcode_state contains PAUSE\\n3) Bed target \u003e= 90C\\n4) Chamber \u003e= 47C\\n5) MQTT resume command",
+                                         "height":  134,
+                                         "width":  305,
+                                         "color":  4
+                                     },
+                      "type":  "n8n-nodes-base.stickyNote",
+                      "typeVersion":  1,
+                      "position":  [
+                                       3872,
+                                       3040
+                                   ],
+                      "id":  "3a9b0c16-ba9a-4c58-acf6-3e75ffdd7b94",
+                      "name":  "Note: Resume Logic"
+                  },
+                  {
+                      "parameters":  {
+                                         "mode":  "runOnceForEachItem",
+                                         "jsCode":  "const payload = typeof @{name=BambuLab Auto-Resume \u0026 Heater Controller (v2); nodes=System.Object[]; pinData=; connections=; active=False; settings=; versionId=fb1e2775-aff8-471a-aeed-2af06f5f5ba0; meta=; id=7XFE1Py8W05deUrXwdTWY; tags=System.Object[]}.message === \u0027string\u0027 ? JSON.parse(@{name=BambuLab Auto-Resume \u0026 Heater Controller (v2); nodes=System.Object[]; pinData=; connections=; active=False; settings=; versionId=fb1e2775-aff8-471a-aeed-2af06f5f5ba0; meta=; id=7XFE1Py8W05deUrXwdTWY; tags=System.Object[]}.message) : @{name=BambuLab Auto-Resume \u0026 Heater Controller (v2); nodes=System.Object[]; pinData=; connections=; active=False; settings=; versionId=fb1e2775-aff8-471a-aeed-2af06f5f5ba0; meta=; id=7XFE1Py8W05deUrXwdTWY; tags=System.Object[]}.message;\\nreturn [{ json: payload }];"
+                                     },
+                      "type":  "n8n-nodes-base.code",
+                      "typeVersion":  2,
+                      "position":  [
+                                       3184,
+                                       2144
+                                   ],
+                      "id":  "22b4b68e-92f4-4f57-a079-1ca53b08bb0c",
+                      "name":  "Parse MQTT Message"
+                  },
+                  {
+                      "parameters":  {
+                                         "mode":  "runOnceForEachItem",
+                                         "jsCode":  "  const payload = typeof $json.message === \u0027string\u0027\n    ? JSON.parse($json.message)\n    : $json.message;\n\n  return { json: payload };"
+                                     },
+                      "type":  "n8n-nodes-base.code",
+                      "typeVersion":  2,
+                      "position":  [
+                                       3424,
+                                       2832
+                                   ],
+                      "id":  "95bf1e30-d4a1-4463-a241-2824ac5d2077",
+                      "name":  "Parse MQTT Message1"
+                  }
+              ],
+    "pinData":  {
+
+                },
+    "connections":  {
+                        "Is High Temp (ASA/ABS)?":  {
+                                                        "main":  [
+                                                                     [
+                                                                         {
+                                                                             "node":  "Check Chamber Temp",
+                                                                             "type":  "main",
+                                                                             "index":  0
+                                                                         }
+                                                                     ]
+                                                                 ]
+                                                    },
+                        "Check Chamber Temp":  {
+                                                   "main":  [
+                                                                [
+                                                                    {
+                                                                        "node":  "Sign Auth (ON)",
+                                                                        "type":  "main",
+                                                                        "index":  0
+                                                                    }
+                                                                ],
+                                                                [
+                                                                    {
+                                                                        "node":  "Chamber Too Hot?",
+                                                                        "type":  "main",
+                                                                        "index":  0
+                                                                    }
+                                                                ]
+                                                            ]
+                                               },
+                        "Sign Auth (ON)":  {
+                                               "main":  [
+                                                            [
+                                                                {
+                                                                    "node":  "Turn Heater ON",
+                                                                    "type":  "main",
+                                                                    "index":  0
+                                                                }
+                                                            ]
+                                                        ]
+                                           },
+                        "Sign Auth (OFF)":  {
+                                                "main":  [
+                                                             [
+                                                                 {
+                                                                     "node":  "Turn Heater OFF",
+                                                                     "type":  "main",
+                                                                     "index":  0
+                                                                 }
+                                                             ]
+                                                         ]
+                                            },
+                        "Heat Soak Done?":  {
+                                                "main":  [
+                                                             [
+                                                                 {
+                                                                     "node":  "Send Resume Command",
+                                                                     "type":  "main",
+                                                                     "index":  0
+                                                                 }
+                                                             ]
+                                                         ]
+                                            },
+                        "Chamber Too Hot?":  {
+                                                 "main":  [
+                                                              [
+                                                                  {
+                                                                      "node":  "Sign Auth (OFF)",
+                                                                      "type":  "main",
+                                                                      "index":  0
+                                                                  }
+                                                              ]
+                                                          ]
+                                             },
+                        "Bambu Printer Status":  {
+                                                     "main":  [
+                                                                  [
+                                                                      {
+                                                                          "node":  "Parse MQTT Message1",
+                                                                          "type":  "main",
+                                                                          "index":  0
+                                                                      }
+                                                                  ]
+                                                              ]
+                                                 },
+                        "Parse MQTT Message1":  {
+                                                    "main":  [
+                                                                 [
+                                                                     {
+                                                                         "node":  "Heat Soak Done?",
+                                                                         "type":  "main",
+                                                                         "index":  0
+                                                                     },
+                                                                     {
+                                                                         "node":  "Is High Temp (ASA/ABS)?",
+                                                                         "type":  "main",
+                                                                         "index":  0
+                                                                     }
+                                                                 ]
+                                                             ]
+                                                }
+                    },
+    "active":  false,
+    "settings":  {
+                     "executionOrder":  "v1",
+                     "availableInMCP":  false,
+                     "timeSavedMode":  "fixed",
+                     "timezone":  "Pacific/Auckland",
+                     "callerPolicy":  "workflowsFromSameOwner"
+                 },
+    "versionId":  "76487db4-c3b6-42c6-b972-3307ce66c631",
+    "meta":  {
+                 "instanceId":  "dee2869ef96bce5516d33a963e50d4194ba3eea1fc6bb316a3a265cc15582dc3"
+             },
+    "id":  "7XFE1Py8W05deUrXwdTWY",
+    "tags":  [
+                 {
+                     "updatedAt":  "2025-12-19T23:30:48.565Z",
+                     "createdAt":  "2025-12-19T23:30:48.565Z",
+                     "id":  "Fdi1L1RWR21WBb59",
+                     "name":  "private"
+                 }
+             ]
 }
