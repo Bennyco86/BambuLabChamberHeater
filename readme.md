@@ -183,3 +183,4 @@ This is the tricky part. You need to generate a signature for the API request.
 * **"Module 'crypto' is disallowed":** You missed Step 1. Check your environment variables.
 * **<img src="tuya%20logo.jpg" alt="Tuya" height="16"> Tuya "Permission Denied":** Ensure your Tuya Cloud Project has the "Smart Home Basic Service" API enabled (it usually has a trial period).
 * **Wrong Region:** If `tuyaus.com` fails, try `tuyaeu.com` (Europe) or `tuyacn.com` (Asia).
+* **Auto-resume stays false/undefined:** Add a **Parse MQTT Message** code node right after the MQTT trigger to JSON-parse `message`, then drive the conditions from `print.*`. Resume payload must be `{"print":{"command":"resume","sequence_id":"2022"}}`.
