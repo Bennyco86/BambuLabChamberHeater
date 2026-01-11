@@ -1,4 +1,4 @@
-{
+﻿{
     "name":  "BambuLab Auto-Resume \u0026 Heater Controller (v2)",
     "nodes":  [
                   {
@@ -22,7 +22,7 @@
                                          "conditions":  {
                                                             "number":  [
                                                                            {
-                                                                               "value1":  "={{ $json.print ? $json.print.bed_target_temper : $json.message.print.bed_target_temper }}",
+                                                                               "value1":  "={{ $json.print.bed_target_temper }}",
                                                                                "operation":  "largerEqual",
                                                                                "value2":  85
                                                                            }
@@ -92,7 +92,8 @@
                                          "conditions":  {
                                                             "number":  [
                                                                            {
-                                                                               "value1":  "={{ $json.print ? $json.print.chamber_temper : $json.message.print.chamber_temper }}",
+                                                                               "value1":  "={{ $json.print.chamber_temper }}",
+                                                                               "operation":  "smaller",
                                                                                "value2":  52
                                                                            }
                                                                        ]
@@ -112,7 +113,7 @@
                                          "conditions":  {
                                                             "number":  [
                                                                            {
-                                                                               "value1":  "={{ $json.print ? $json.print.chamber_temper : $json.message.print.chamber_temper }}",
+                                                                               "value1":  "={{ $json.print.chamber_temper }}",
                                                                                "operation":  "larger",
                                                                                "value2":  55
                                                                            }
@@ -208,19 +209,19 @@
                                          "conditions":  {
                                                             "string":  [
                                                                            {
-                                                                               "value1":  "={{$json.print.gcode_state}}",
+                                                                               "value1":  "={{ $json.print.gcode_state }}",
                                                                                "operation":  "contains",
                                                                                "value2":  "PAUSE"
                                                                            }
                                                                        ],
                                                             "number":  [
                                                                            {
-                                                                               "value1":  "={{$json.print.bed_target_temper}}",
+                                                                               "value1":  "={{ $json.print.bed_target_temper }}",
                                                                                "operation":  "largerEqual",
                                                                                "value2":  90
                                                                            },
                                                                            {
-                                                                               "value1":  "={{$json.print.chamber_temper}}",
+                                                                               "value1":  "={{ $json.print.chamber_temper }}",
                                                                                "operation":  "largerEqual",
                                                                                "value2":  47
                                                                            }
@@ -274,7 +275,7 @@
                   {
                       "parameters":  {
                                          "mode":  "runOnceForEachItem",
-                                         "jsCode":  "const payload = typeof @{name=BambuLab Auto-Resume \u0026 Heater Controller (v2); nodes=System.Object[]; pinData=; connections=; active=False; settings=; versionId=fb1e2775-aff8-471a-aeed-2af06f5f5ba0; meta=; id=7XFE1Py8W05deUrXwdTWY; tags=System.Object[]}.message === \u0027string\u0027 ? JSON.parse(@{name=BambuLab Auto-Resume \u0026 Heater Controller (v2); nodes=System.Object[]; pinData=; connections=; active=False; settings=; versionId=fb1e2775-aff8-471a-aeed-2af06f5f5ba0; meta=; id=7XFE1Py8W05deUrXwdTWY; tags=System.Object[]}.message) : @{name=BambuLab Auto-Resume \u0026 Heater Controller (v2); nodes=System.Object[]; pinData=; connections=; active=False; settings=; versionId=fb1e2775-aff8-471a-aeed-2af06f5f5ba0; meta=; id=7XFE1Py8W05deUrXwdTWY; tags=System.Object[]}.message;\\nreturn [{ json: payload }];"
+                                         "jsCode":  "const payload = typeof @{name=BambuLab Auto-Resume \u0026 Heater Controller (v2); nodes=System.Object[]; pinData=; connections=; active=False; settings=; id=workflow-sample}.message === \u0027string\u0027 ? JSON.parse(@{name=BambuLab Auto-Resume \u0026 Heater Controller (v2); nodes=System.Object[]; pinData=; connections=; active=False; settings=; id=workflow-sample}.message) : @{name=BambuLab Auto-Resume \u0026 Heater Controller (v2); nodes=System.Object[]; pinData=; connections=; active=False; settings=; id=workflow-sample}.message;\\nreturn { json: payload };"
                                      },
                       "type":  "n8n-nodes-base.code",
                       "typeVersion":  2,
@@ -284,20 +285,6 @@
                                    ],
                       "id":  "node-12",
                       "name":  "Parse MQTT Message"
-                  },
-                  {
-                      "parameters":  {
-                                         "mode":  "runOnceForEachItem",
-                                         "jsCode":  "  const payload = typeof $json.message === \u0027string\u0027\n    ? JSON.parse($json.message)\n    : $json.message;\n\n  return { json: payload };"
-                                     },
-                      "type":  "n8n-nodes-base.code",
-                      "typeVersion":  2,
-                      "position":  [
-                                       3424,
-                                       2832
-                                   ],
-                      "id":  "node-13",
-                      "name":  "Parse MQTT Message1"
                   }
               ],
     "pinData":  {
@@ -379,13 +366,11 @@
                                              },
                         "Bambu Printer Status":  {
                                                      "main":  [
-                                                                  [
-                                                                      {
-                                                                          "node":  "Parse MQTT Message1",
-                                                                          "type":  "main",
-                                                                          "index":  0
-                                                                      }
-                                                                  ]
+                                                                  {
+                                                                      "node":  "Parse MQTT Message",
+                                                                      "type":  "main",
+                                                                      "index":  0
+                                                                  }
                                                               ]
                                                  },
                         "Parse MQTT Message1":  {
@@ -403,7 +388,21 @@
                                                                      }
                                                                  ]
                                                              ]
-                                                }
+                                                },
+                        "Parse MQTT Message":  {
+                                                   "main":  [
+                                                                {
+                                                                    "node":  "Is High Temp (ASA/ABS)?",
+                                                                    "type":  "main",
+                                                                    "index":  0
+                                                                },
+                                                                {
+                                                                    "node":  "Heat Soak Done?",
+                                                                    "type":  "main",
+                                                                    "index":  0
+                                                                }
+                                                            ]
+                                               }
                     },
     "active":  false,
     "settings":  {
@@ -413,17 +412,5 @@
                      "timezone":  "Pacific/Auckland",
                      "callerPolicy":  "workflowsFromSameOwner"
                  },
-    "versionId":  "76487db4-c3b6-42c6-b972-3307ce66c631",
-    "meta":  {
-                 "instanceId":  "dee2869ef96bce5516d33a963e50d4194ba3eea1fc6bb316a3a265cc15582dc3"
-             },
-    "id":  "workflow-sample",
-    "tags":  [
-                 {
-                     "updatedAt":  "2025-12-19T23:30:48.565Z",
-                     "createdAt":  "2025-12-19T23:30:48.565Z",
-                     "id":  "Fdi1L1RWR21WBb59",
-                     "name":  "private"
-                 }
-             ]
+    "id":  "workflow-sample"
 }
