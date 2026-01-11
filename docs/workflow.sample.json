@@ -14,14 +14,8 @@
                                        3120,
                                        2832
                                    ],
-                      "id":  "ee171390-7c32-49a1-8167-77cc92b14187",
-                      "name":  "Bambu Printer Status",
-                      "credentials":  {
-                                          "mqtt":  {
-                                                       "id":  "YOUR_MQTT_CRED_ID",
-                                                       "name":  "YOUR_MQTT_CRED_NAME"
-                                                   }
-                                      }
+                      "id":  "node-1",
+                      "name":  "Bambu Printer Status"
                   },
                   {
                       "parameters":  {
@@ -41,7 +35,7 @@
                                        3680,
                                        2688
                                    ],
-                      "id":  "74576b61-5bb8-43d7-be40-5706cffbdc9f",
+                      "id":  "node-2",
                       "name":  "Is High Temp (ASA/ABS)?"
                   },
                   {
@@ -90,7 +84,7 @@
                                        4384,
                                        2560
                                    ],
-                      "id":  "e01f7569-8184-4fab-929e-e12879d0f970",
+                      "id":  "node-3",
                       "name":  "Turn Heater ON"
                   },
                   {
@@ -110,7 +104,7 @@
                                        3920,
                                        2688
                                    ],
-                      "id":  "3cea33c4-3e88-4ca4-8d21-18dd0344fb23",
+                      "id":  "node-4",
                       "name":  "Check Chamber Temp"
                   },
                   {
@@ -131,7 +125,7 @@
                                        4144,
                                        2848
                                    ],
-                      "id":  "ae9ad386-f2aa-4a8c-a8ec-093bb83480a3",
+                      "id":  "node-5",
                       "name":  "Chamber Too Hot?"
                   },
                   {
@@ -144,7 +138,7 @@
                                        4160,
                                        2560
                                    ],
-                      "id":  "9deb8382-fa32-4488-8fcb-4247cf174547",
+                      "id":  "node-6",
                       "name":  "Sign Auth (ON)"
                   },
                   {
@@ -157,7 +151,7 @@
                                        4384,
                                        2848
                                    ],
-                      "id":  "bd44639a-b03a-4f29-8412-6149fa1e4956",
+                      "id":  "node-7",
                       "name":  "Sign Auth (OFF)"
                   },
                   {
@@ -206,7 +200,7 @@
                                        4592,
                                        2848
                                    ],
-                      "id":  "19a066da-5f1e-48c9-ace8-d22b722cbeb2",
+                      "id":  "node-8",
                       "name":  "Turn Heater OFF"
                   },
                   {
@@ -239,7 +233,7 @@
                                        3968,
                                        3200
                                    ],
-                      "id":  "d8b48a47-53b0-4652-843c-5ba3f4a251f5",
+                      "id":  "node-9",
                       "name":  "Heat Soak Done?"
                   },
                   {
@@ -258,14 +252,8 @@
                                        4336,
                                        3168
                                    ],
-                      "id":  "2ffa8980-e2fa-4acc-9999-83e23cb00ca3",
-                      "name":  "Send Resume Command",
-                      "credentials":  {
-                                          "mqtt":  {
-                                                       "id":  "YOUR_MQTT_CRED_ID",
-                                                       "name":  "YOUR_MQTT_CRED_NAME"
-                                                   }
-                                      }
+                      "id":  "node-10",
+                      "name":  "Send Resume Command"
                   },
                   {
                       "parameters":  {
@@ -280,7 +268,7 @@
                                        3872,
                                        3040
                                    ],
-                      "id":  "3a9b0c16-ba9a-4c58-acf6-3e75ffdd7b94",
+                      "id":  "node-11",
                       "name":  "Note: Resume Logic"
                   },
                   {
@@ -294,7 +282,7 @@
                                        3184,
                                        2144
                                    ],
-                      "id":  "22b4b68e-92f4-4f57-a079-1ca53b08bb0c",
+                      "id":  "node-12",
                       "name":  "Parse MQTT Message"
                   },
                   {
@@ -308,7 +296,7 @@
                                        3424,
                                        2832
                                    ],
-                      "id":  "95bf1e30-d4a1-4463-a241-2824ac5d2077",
+                      "id":  "node-13",
                       "name":  "Parse MQTT Message1"
                   }
               ],
@@ -429,7 +417,7 @@
     "meta":  {
                  "instanceId":  "dee2869ef96bce5516d33a963e50d4194ba3eea1fc6bb316a3a265cc15582dc3"
              },
-    "id":  "7XFE1Py8W05deUrXwdTWY",
+    "id":  "workflow-sample",
     "tags":  [
                  {
                      "updatedAt":  "2025-12-19T23:30:48.565Z",
