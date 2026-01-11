@@ -16,6 +16,17 @@
 
 ---
 
+## :camera: Screenshots (OrcaSlicer + n8n)
+**OrcaSlicer chamber settings:** Enable chamber temperature and set the target for ABS/ASA. Do **not** enable active control (X1C firmware does not support it).
+
+![OrcaSlicer chamber temp settings](OrcaSlicerSetting.jpg)
+
+**n8n workflow:** The logic listens to printer status, checks high-temp materials, and toggles the Tuya plug to heat or stop.
+
+![n8n workflow](n8n_WorkFlow_Working.jpg)
+
+---
+
 ## :hot_face: Bambu Studio heat soak (no chamber preheat)
 If you use Bambu Studio, there is no built-in chamber preheat like OrcaSlicer. You can add a custom "heat soak" routine in your machine start G-code so high-temp materials warm the chamber before printing.
 
