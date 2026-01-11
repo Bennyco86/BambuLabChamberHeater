@@ -16,6 +16,52 @@
 
 ---
 
+## :hot_face: Bambu Studio heat soak (no chamber preheat)
+If you use Bambu Studio, there is no built-in chamber preheat like OrcaSlicer. You can add a custom "heat soak" routine in your machine start G-code so high-temp materials warm the chamber before printing.
+
+1) Find this section in your machine start G-code (around line 73):
+```gcode
+;===== heatbed preheat ====================
+M1002 gcode_claim_action:54
+M140 S[bed_temperature_initial_layer_single] ;set bed temp
+M190 S[bed_temperature_initial_layer_single] ;wait for bed temp
+```
+
+2) Replace it with this block:
+```gcode
+;===== CUSTOM HEAT SOAK START ====================
+; Only run if bed target is > 90C (ABS/ASA/PC)
+{if bed_temperature_initial_layer_single[initial_no_support_extruder] > 90}
+  M1002 gcode_claim_action : 2 ; Set status to "Heatbed preheating"
+  M140 S110 ; Set Bed to 110C to heat chamber faster
+  G90
+  G1 Z100 F1200 ; Move bed down 100mm to help circulation
+  M106 P2 S255 ; Turn Aux Fan to 100% to circulate air
+
+  ; WAIT COMMAND (Choose Option A or B below)
+
+  ; Option A: Wait for Chamber Temp (Best for X1C)
+  M191 S45 ; Wait until chamber reaches 45C
+
+  ; Option B: Wait for Time (If Option A doesn't work for you)
+  ; G4 S600 ; Wait 600 seconds (10 mins) - Uncomment to use
+
+  M106 P2 S0 ; Turn off Aux fan
+  M140 S{bed_temperature_initial_layer_single[initial_no_support_extruder]} ; Restore correct bed temp
+{else}
+  ; Standard warm up for PLA/PETG
+  M140 S[bed_temperature_initial_layer_single] ;set bed temp
+  M190 S[bed_temperature_initial_layer_single] ;wait for bed temp
+{endif}
+;===== END HEAT SOAK ====================
+```
+
+Summary:
+- Original code: only heats the bed and starts printing when the bed hits target.
+- New code: if bed target is > 90C, it runs a heat soak routine to warm the chamber first.
+
+---
+
 ## :wrench: Step 1: Configure <img src="n8n-color.svg" alt="n8n" height="18"> n8n Environment
 The <img src="tuya%20logo.jpg" alt="Tuya" height="16"> Tuya API requires cryptographic signing (HMAC-SHA256). By default, <img src="n8n-color.svg" alt="n8n" height="16"> n8n blocks the `crypto` module in the "Code" node.
 
