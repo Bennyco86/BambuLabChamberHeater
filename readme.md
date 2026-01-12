@@ -54,6 +54,8 @@ M190 S[bed_temperature_initial_layer_single] ;wait for bed temp
 ; --- MOD END ---
 ```
 
+Note: the workflow currently resumes at **47C** (good if you do not have a heater installed yet). With a heater installed, bump the resume threshold to **55–60C**. Without a heater, the bed alone can take a long time to reach higher chamber temps.
+
 Summary:
 - Original code: only heats the bed and starts printing when the bed hits target.
 - New code: if bed target is > 90C, it runs a heat soak routine to warm the chamber first.
