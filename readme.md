@@ -16,10 +16,8 @@
 
 ---
 
-## :camera: Screenshots (OrcaSlicer + n8n)
-**OrcaSlicer chamber settings:** Enable chamber temperature and set the target for ABS/ASA. Do **not** enable active control (X1C firmware does not support it).
+## :camera: Screenshots n8n
 
-![OrcaSlicer chamber temp settings](OrcaSlicerSetting.jpg)
 
 **n8n workflow:** The logic listens to printer status, checks high-temp materials, and toggles the Tuya plug to heat or stop.
 
