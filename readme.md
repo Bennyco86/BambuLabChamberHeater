@@ -40,7 +40,7 @@ M190 S[bed_temperature_initial_layer_single] ;wait for bed temp
 ```gcode
 ; --- MOD START: MQTT Heat Soak Trigger (>85C Only) ---
 ; Only runs if the sliced bed temp is STRICTLY greater than 85C.
-; This ignores PLA, PETG, and TPU completely.
+; ABS defaults to ~90C, so this will trigger for ABS/ASA and skip PLA/PETG/TPU.
 {if bed_temperature_initial_layer_single > 85}
     M1002 gcode_claim_action : 2
     M140 S100    ; Force Bed to 100C for the soak
