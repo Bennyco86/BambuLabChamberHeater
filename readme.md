@@ -52,7 +52,7 @@ M190 S[bed_temperature_initial_layer_single] ;wait for bed temp
 ; --- MOD END ---
 ```
 
-Note: the workflow currently resumes at **47C** (good if you do not have a heater installed yet). With a heater installed, bump the resume threshold to **55–60C**. Without a heater, the bed alone can take a long time to reach higher chamber temps.
+Note: the workflow currently resumes at **47C** (good if you do not have a heater installed yet). With a heater installed, bump the resume threshold to **55-60C**. Without a heater, the bed alone can take a long time to reach higher chamber temps.
 
 Summary:
 - Original code: only heats the bed and starts printing when the bed hits target.
@@ -83,9 +83,9 @@ To control the plug via script, you need "Cloud" access, not just the App.
     * Scan the QR code with the Tuya Smart App on your phone.
     * Your smart plug should now appear in the device list.
 4. Copy these 3 values for later:
-    * **Access ID (Client ID)**
-    * **Access Secret (Client Secret)**
-    * **Device ID** (of the smart plug)
+    * **Access ID (Client ID)** -> `YOUR_TUYA_ACCESS_ID`
+    * **Access Secret (Client Secret)** -> `YOUR_TUYA_ACCESS_SECRET`
+    * **Device ID** (smart plug) -> `YOUR_TUYA_DEVICE_ID`
 
 ---
 
@@ -95,7 +95,7 @@ Create a new workflow in <img src="n8n-color.svg" alt="n8n" height="16"> n8n.
 ### **Node 1: Trigger (<img src="bambu%20lab%20logo%202.jpg" alt="Bambu Lab" height="16"> Bambu Lab)**
 * **Node Type:** MQTT Trigger (if using LAN mode) or HTTP Polling (if using Cloud).
 * **Recommended (MQTT):**
-    * **Topic:** `device/[YOUR_SERIAL_NUMBER]/report`
+    * **Topic:** `device/YOUR_PRINTER_SN/report`
     * **Credentials:** Printer IP, Port `8883`, User `bblp`, Password `[ACCESS_CODE]`.
     * *Note: This gives you live data like `nozzle_temp`, `chamber_temp`, and `gcode_state`.*
 
@@ -107,68 +107,119 @@ Create a new workflow in <img src="n8n-color.svg" alt="n8n" height="16"> n8n.
     * Check Chamber Temp: Is it < 45C?
 * **Outcome:** If Printing ABS **AND** Chamber is Cold -> **Route to "Turn ON"**.
 
-### **Node 3: The <img src="tuya%20logo.jpg" alt="Tuya" height="16"> Tuya Signer (JavaScript)**
-This is the tricky part. You need to generate a signature for the API request.
+### **Node 3: <img src="tuya%20logo.jpg" alt="Tuya" height="16"> Token Signer (JavaScript)**
+Create a signed request to fetch a Tuya access token.
 * **Node Type:** Code (JavaScript).
 * **Code Snippet:**
     ```javascript
     const crypto = require('crypto');
 
-    // Your Credentials
-    const clientId = 'YOUR_ACCESS_ID';
-    const clientSecret = 'YOUR_ACCESS_SECRET';
-    const deviceId = 'YOUR_DEVICE_ID';
+    const clientId = 'YOUR_TUYA_ACCESS_ID';
+    const clientSecret = 'YOUR_TUYA_ACCESS_SECRET';
 
-    // Timestamp
     const t = Date.now().toString();
-
-    // Command to Turn ON (value: true) or OFF (value: false)
-    // CHANGE THIS BOOLEAN BASED ON THE PATH (ON vs OFF)
-    const command = {
-      "commands": [
-        { "code": "switch_1", "value": true }
-      ]
-    };
-
-    // Calculate Signature (HMAC-SHA256)
-    // Tuya Sign String: clientId + accessToken + t + nonce + stringToSign
-    // Simplify for "Simple Mode" auth if enabled, or use standard V2 signing:
-    // This is a simplified "Easy Mode" sign example often used in generic scripts:
-    const signStr = clientId + t + "POST" + "\n" +
-                    "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855" + // Empty payload hash
-                    "\n" + "" + "\n" + "/v1.0/devices/" + deviceId + "/commands";
-
-    const sign = crypto.createHmac('sha256', clientSecret).update(signStr).digest('HEX').toUpperCase();
+    const method = 'GET';
+    const path = '/v1.0/token?grant_type=1';
+    const contentHash = crypto.createHash('sha256').update('').digest('hex');
+    const stringToSign = [method, contentHash, '', path].join('\n');
+    const signStr = clientId + t + stringToSign;
+    const sign = crypto.createHmac('sha256', clientSecret).update(signStr).digest('hex').toUpperCase();
 
     return {
-        json: {
-            t,
-            sign,
-            clientId,
-            deviceId,
-            command
-        }
+      json: {
+        client_id: clientId,
+        t,
+        sign,
+        sign_method: 'HMAC-SHA256'
+      }
     };
     ```
 
-### **Node 4: Send Command (<img src="tuya%20logo.jpg" alt="Tuya" height="16"> HTTP Request)**
+### **Node 4: Get Tuya Token (<img src="tuya%20logo.jpg" alt="Tuya" height="16"> HTTP Request)**
+* **Node Type:** HTTP Request.
+* **Method:** GET.
+* **URL:** `https://openapi.tuyaus.com/v1.0/token?grant_type=1` *(Adjust URL for your region: US/EU/CN)*.
+* **Headers:**
+    * `client_id`: `{{ $json.client_id }}`
+    * `sign`: `{{ $json.sign }}`
+    * `t`: `{{ $json.t }}`
+    * `sign_method`: `HMAC-SHA256`
+
+### **Node 5: <img src="tuya%20logo.jpg" alt="Tuya" height="16"> Command Signer (JavaScript)**
+Generate a signed IoT Core request to set `switch_1` true/false.
+* **Node Type:** Code (JavaScript).
+* **Code Snippet:**
+    ```javascript
+    const crypto = require('crypto');
+
+    const clientId = 'YOUR_TUYA_ACCESS_ID';
+    const clientSecret = 'YOUR_TUYA_ACCESS_SECRET';
+    const deviceId = 'YOUR_TUYA_DEVICE_ID';
+    const accessToken = $json.result.access_token;
+
+    const properties = { switch_1: true }; // set false to turn OFF
+    const body = JSON.stringify({ properties });
+
+    const t = Date.now().toString();
+    const path = `/v2.0/cloud/thing/${deviceId}/shadow/properties/issue`;
+    const contentHash = crypto.createHash('sha256').update(body).digest('hex');
+    const stringToSign = ['POST', contentHash, '', path].join('\n');
+    const signStr = clientId + accessToken + t + stringToSign;
+    const sign = crypto.createHmac('sha256', clientSecret).update(signStr).digest('hex').toUpperCase();
+
+    return {
+      json: {
+        client_id: clientId,
+        access_token: accessToken,
+        t,
+        sign,
+        sign_method: 'HMAC-SHA256',
+        device_id: deviceId,
+        properties
+      }
+    };
+    ```
+
+### **Node 6: Send Command (<img src="tuya%20logo.jpg" alt="Tuya" height="16"> HTTP Request)**
 * **Node Type:** HTTP Request.
 * **Method:** POST.
-* **URL:** `https://openapi.tuyaus.com/v1.0/devices/{{ $json.deviceId }}/commands` *(Adjust URL for your region: US/EU/CN)*.
+* **URL:** `https://openapi.tuyaus.com/v2.0/cloud/thing/{{ $json.device_id }}/shadow/properties/issue` *(Adjust URL for your region: US/EU/CN)*.
 * **Headers:**
-    * `client_id`: `{{ $json.clientId }}`
+    * `client_id`: `{{ $json.client_id }}`
+    * `access_token`: `{{ $json.access_token }}`
     * `sign`: `{{ $json.sign }}`
     * `t`: `{{ $json.t }}`
     * `sign_method`: `HMAC-SHA256`
 * **Body:** JSON.
-* **JSON Value:** `{{ $json.command }}`
+* **JSON Value:** `properties: {{ $json.properties }}`
 
 ---
 
 ## :warning: Troubleshooting
 
 * **"Module 'crypto' is disallowed":** You missed Step 1. Check your environment variables.
-* **<img src="tuya%20logo.jpg" alt="Tuya" height="16"> Tuya "Permission Denied":** Ensure your Tuya Cloud Project has the "Smart Home Basic Service" API enabled (it usually has a trial period).
+* **<img src="tuya%20logo.jpg" alt="Tuya" height="16"> Tuya "No permissions"/"Permission denied":** Ensure your Tuya Cloud Project is authorized for **IoT Core** and the device is linked to the project. The free trial resource pack is enough for device control.
 * **Wrong Region:** If `tuyaus.com` fails, try `tuyaeu.com` (Europe) or `tuyacn.com` (Asia).
 * **Auto-resume stays false/undefined:** Add a **Parse MQTT Message** code node right after the MQTT trigger to JSON-parse `message`, then drive the conditions from `print.*`. Resume payload must be `{"print":{"command":"resume","sequence_id":"2022"}}`.
 * **Edits not taking effect:** n8n runs the last **active** version. After saving changes, deactivate and re-activate the workflow so the new version is deployed.
+* **Slow File Uploads / Network Instability:** The P1/A1 series printers have limited CPU resources. Maintaining an active local MQTT connection (LAN Mode) with n8n while simultaneously uploading files (Bambu Studio) can saturate the printer's processor, causing uploads to fail or crawl. **Solution:** Temporarily disable the n8n workflow during large uploads, or switch n8n to connect to the **Bambu Cloud MQTT** broker instead of the printer's local IP. This offloads the connection overhead.
+
+---
+
+## :bulb: Troubleshooting: Tuya IoT Configuration
+If you receive "Permission Denied" or "No Permissions" errors from Tuya, you likely need to subscribe to the Cloud Services.
+
+1.  **Log in** to the [Tuya IoT Platform](https://iot.tuya.com/).
+2.  Go to **Cloud > Projects** and open your project.
+3.  Click **Service API**.
+4.  Ensure **"IoT Core"** is listed and **Authorized**.
+    *   *If not listed:* Click "Go to Service Market", search for "IoT Core", and "Subscribe" (it is free). Then add it to your project.
+5.  **Check Device Linking:**
+    *   Go to **Cloud > Development > Your Project > Devices**.
+    *   Ensure your Smart Plug is listed here. If not, use the "Link Tuya App Account" tab to sync it from your phone.
+6.  **Command Codes:**
+    *   Most plugs use `switch_1` for the main power.
+    *   Some strips use `switch_1`, `switch_2`, etc.
+    *   Verify your device's instruction set: **Cloud > Development > Your Project > Devices > Debug Device**.
+
+
