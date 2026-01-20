@@ -21,7 +21,7 @@
 
 **n8n workflow:** The logic listens to printer status, checks high-temp materials, and toggles the Tuya plug to heat or stop.
 
-![n8n workflow](Actually%20working%20flow%20with%20pause%20resume%20commands.jpg)
+![n8n workflow](n8n_automation_workflow.jpg)
 
 ---
 
